@@ -1,4 +1,4 @@
-; * Carles Vilella, 2017 (ENTI-UB)
+; * David Recuenco & Alex Weiland, 2018 (ENTI-UB)
 
 ; *************************************************************************
 ; Our data section. Here we declare our strings for our console message
@@ -12,10 +12,13 @@ SGROUP 		GROUP 	CODE_SEG, DATA_SEG
 
 ; EXTENDED ASCII CODES
     ASCII_SPECIAL_KEY EQU 00
-    ASCII_LEFT        EQU 061h ; 'a'
-    ASCII_RIGHT       EQU 064h ; 'd'
+
     ASCII_UP          EQU 077h ; 'w'
     ASCII_DOWN        EQU 073h ; 's'
+    
+    ASCII_UP2         EQU 06Fh ; 'o'
+    ASCII_DOWN2       EQU 06Ch ; 'l'
+
     ASCII_QUIT        EQU 071h ; 'q'
 
 ; ASCII / ATTR CODES TO DRAW THE SNAKE
