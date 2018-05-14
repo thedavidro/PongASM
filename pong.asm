@@ -95,14 +95,14 @@ MAIN 	PROC 	NEAR
       ; The game is on!
       MOV [START_GAME], TRUE
 
-      CMP AL, ASCII_RIGHT
-      JZ RIGHT_KEY
-      CMP AL, ASCII_LEFT
-      JZ LEFT_KEY
       CMP AL, ASCII_UP
-      JZ UP_KEY
+      JZ UP1
       CMP AL, ASCII_DOWN
-      JZ DOWN_KEY
+      JZ DOWN1
+      CMP AL, ASCII_UP2
+      JZ UP2
+      CMP AL, ASCII_DOWN2
+      JZ DOWN2
 
       JMP MAIN_LOOP
 
@@ -111,24 +111,24 @@ MAIN_LOOP_BUT_READCHAR:
       JMP MAIN_LOOP
 
 
-  RIGHT_KEY:
-      MOV [INC_COL], 1
-      MOV [INC_ROW], 0
+  UP1:
+      MOV [PAD1_ROW], 0
+      MOV [PAD1_COL], 1
       JMP END_KEY
 
-  LEFT_KEY:
-      MOV [INC_COL], -1
-      MOV [INC_ROW], 0
+  DOWN1:
+      MOV [PAD1_ROW], 0
+      MOV [PAD1_COL], -1
       JMP END_KEY
 
-  UP_KEY:
-      MOV [INC_COL], 0
-      MOV [INC_ROW], -1
+  UP2:
+      MOV [PAD2_ROW], 0
+      MOV [PAD2_COL], 1
       JMP END_KEY
 
-  DOWN_KEY:
-      MOV [INC_COL], 0
-      MOV [INC_ROW], 1
+  DOWN2:
+      MOV [PAD2_ROW], 0
+      MOV [PAD2_COL], -1
       JMP END_KEY
       
   END_KEY:
@@ -955,6 +955,18 @@ DATA_SEG	SEGMENT	PUBLIC
     ; (INC_ROW. INC_COL) may be (-1, 0, 1), and determine the direction of movement of the snake
     INC_ROW DB 0    
     INC_COL DB 0
+	
+	; PADDLE #1 coordinates
+	PAD1_ROW DB 3
+	PAD1_COL DB SCREEN_MAX_COLS/2
+	
+	; PAADLE #2 coordinates
+	PAD2_ROW DB SCREEN_MAX_ROWS-3
+	PAD2_COL DB SCREEN_MAX_COLS/2
+	
+	; BALL coordinates
+	BALL_ROW DB SCREEN_MAX_ROWS/2
+	BALL_COL DB SCREEN_MAX_COLS/2
 
     NUM_TILES DW 0              ; SNAKE LENGTH
     NUM_TILES_INC_SPEED DB 20   ; THE SPEED IS INCREASED EVERY 'NUM_TILES_INC_SPEED'
