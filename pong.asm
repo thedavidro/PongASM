@@ -32,6 +32,7 @@ SGROUP 		GROUP 	CODE_SEG, DATA_SEG
 
 ; ASCII / ATTR CODES TO DRAW THE FIELD
     ASCII_FIELD    EQU 020h
+	ATTR_EMPTY	   EQU 000h
     ATTR_FIELD     EQU 070h
 	ATTR_TOP	   EQU 071h	; Blue on White.
 	ATTR_BOTTOM	   EQU 072h	; Green on White.
@@ -121,33 +122,161 @@ MAIN 	PROC 	NEAR
 
 
   UP1:
-      ;MOV [PAD1_ROW], 0
-      DEC [PAD1_ROW]
+	  ; Mirar si encima hay pared (field)
+	  MOV DH, [PAD1_ROW]
+	  MOV DL, [PAD1_COL]
+	  DEC DH				; Apunta encima
+	  CALL MOVE_CURSOR
+	  CALL READ_SCREEN_CHAR
+      CMP AH, ATTR_TOP
+      JZ END_KEY
+	  
+      ; Borrar parte de abajo (+)
+      MOV DH, [PAD1_ROW]
+	  MOV DL, [PAD1_COL]
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  CALL MOVE_CURSOR
+	  MOV AL, ASCII_FIELD
+	  MOV BL, ATTR_EMPTY
+	  CALL PRINT_CHAR_ATTR
+	  
+	  ; Modificar valor
+	  DEC [PAD1_ROW]
       JMP END_KEY
 
   DOWN1:
-      ;MOV [PAD1_ROW], 0
+	  ; Mirar si debajo hay pared (field)
+	  MOV DH, [PAD1_ROW]
+	  MOV DL, [PAD1_COL]
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH 				; Apunta debajo
+	  CALL MOVE_CURSOR
+	  CALL READ_SCREEN_CHAR
+      CMP AH, ATTR_BOTTOM
+      JZ END_KEY
+  
+      ; Borrar parte de arriba (-)
+	  MOV DH, [PAD1_ROW]
+	  MOV DL, [PAD1_COL]
+	  CALL MOVE_CURSOR
+	  MOV AL, ASCII_FIELD
+	  MOV BL, ATTR_EMPTY
+	  CALL PRINT_CHAR_ATTR
+	  
+	  ; Modificar valores
       INC [PAD1_ROW]
       JMP END_KEY
 
   UP2:
-      ;MOV [PAD2_ROW], 0
+	  ; Mirar si encima hay pared (field)
+	  MOV DH, [PAD2_ROW]
+	  MOV DL, [PAD2_COL]
+	  DEC DH				; Apunta encima
+	  CALL MOVE_CURSOR
+	  CALL READ_SCREEN_CHAR
+      CMP AH, ATTR_TOP
+      JZ END_KEY
+  
+      ; Borrar parte de abajo (+)
+      MOV DH, [PAD2_ROW]
+	  MOV DL, [PAD2_COL]
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  CALL MOVE_CURSOR
+	  MOV AL, ASCII_FIELD
+	  MOV BL, ATTR_EMPTY
+	  CALL PRINT_CHAR_ATTR
+	  
+	  ; Modificar valor
       DEC [PAD2_ROW]
       JMP END_KEY
 
   DOWN2:
-      ;MOV [PAD2_ROW], 0
+	  ; Mirar si debajo hay pared (field)
+	  MOV DH, [PAD2_ROW]
+	  MOV DL, [PAD2_COL]
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH
+	  INC DH 				; Apunta debajo
+	  CALL MOVE_CURSOR
+	  CALL READ_SCREEN_CHAR
+      CMP AH, ATTR_BOTTOM
+      JZ END_KEY
+  
+      ; Borrar parte de arriba (-)
+	  MOV DH, [PAD2_ROW]
+	  MOV DL, [PAD2_COL]
+	  CALL MOVE_CURSOR
+	  MOV AL, ASCII_FIELD
+	  MOV BL, ATTR_EMPTY
+	  CALL PRINT_CHAR_ATTR
+	  
+	  ; Modificar valores
       INC [PAD2_ROW]
       JMP END_KEY
       
   END_KEY:
-	  ; Pintar Pala1:
+	  ; Pintar Pala1
 	  MOV DH, [PAD1_ROW]
 	  MOV DL, [PAD1_COL]
 	  CALL MOVE_CURSOR
 	  MOV AL, ASCII_PALAS
 	  MOV BL, ATTR_PALA1
 	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+
+	  ; Pintar Pala2
+	  MOV DH, [PAD2_ROW]
+	  MOV DL, [PAD2_COL]
+	  CALL MOVE_CURSOR
+	  MOV AL, ASCII_PALAS
+	  MOV BL, ATTR_PALA2
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  INC DH
+	  CALL MOVE_CURSOR
+	  CALL PRINT_CHAR_ATTR
+	  
+	  
       JMP MAIN_LOOP
 
   END_PROG:
@@ -192,12 +321,12 @@ MAIN	ENDP
                   PUBLIC  INIT_GAME
 INIT_GAME         PROC    NEAR
 
-    MOV [INC_ROW], 0
-    MOV [INC_COL], 0
+    ;MOV [INC_ROW], 0
+    ;MOV [INC_COL], 0
 
-    MOV [DIV_SPEED], 10
+    ;MOV [DIV_SPEED], 10
 
-    MOV [NUM_TILES], 0
+    ;MOV [NUM_TILES], 0
     
     MOV [START_GAME], FALSE
     MOV [END_GAME], FALSE
@@ -881,37 +1010,7 @@ NEW_TIMER_INTERRUPT PROC NEAR
     CMP [START_GAME], TRUE
     JNZ END_ISR
 
-    ; Increment INC_COUNT and check if worm position must be updated (INT_COUNT == DIV_COUNT)
-    INC [INT_COUNT]
-    MOV AL, [INT_COUNT]
-    CMP [DIV_SPEED], AL
-    JNZ END_ISR
-    MOV [INT_COUNT], 0
-
-    ; Load worm coordinates
-    ADD DL, [INC_COL]
-    ADD DH, [INC_ROW]
-
-    ; Move snake on the screen
-    CALL MOVE_CURSOR
-
-    ; Check if snake collided with the field or with himself
-    CALL READ_SCREEN_CHAR
-    CMP AH, ATTR_SNAKE
-    JZ END_SNAKES
-
-    ; Increment the length of the snake
-    INC [NUM_TILES]
-    CALL PRINT_SNAKE
-
-    ; Check if it is time to increase the speed of the snake
-    CMP [DIV_SPEED], 1
-    JZ END_ISR
-    MOV AX, [NUM_TILES]
-    DIV [NUM_TILES_INC_SPEED]
-    CMP AH, 0                 ; REMAINDER
-    JNZ END_ISR
-    DEC [DIV_SPEED]
+	; Ball Movement
 
     JMP END_ISR
       
@@ -1021,9 +1120,13 @@ DATA_SEG	SEGMENT	PUBLIC
 	PAD1_ROW DB SCREEN_MAX_ROWS/2
 	PAD1_COL DB 3
 	
-	; PAADLE #2 coordinates
+	; PADDLE #2 coordinates
 	PAD2_ROW DB SCREEN_MAX_ROWS/2
-	PAD2_COL DB SCREEN_MAX_COLS-3
+	PAD2_COL DB SCREEN_MAX_COLS-4
+	
+	; PADDLE TMPS
+	PAD1_TMP DB 0
+	PAD2_TMP DB 0
 	
 	; BALL coordinates
 	BALL_ROW DB SCREEN_MAX_ROWS/2
