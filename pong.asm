@@ -24,10 +24,19 @@ SGROUP 		GROUP 	CODE_SEG, DATA_SEG
 ; ASCII / ATTR CODES TO DRAW THE SNAKE
     ASCII_SNAKE     EQU 02Ah
     ATTR_SNAKE      EQU 070h
+	
+; ASCII / ATTR PALAS
+	ASCII_PALAS		EQU 020h
+	ATTR_PALA1		EQU 017h
+	ATTR_PALA2		EQU 027h
 
 ; ASCII / ATTR CODES TO DRAW THE FIELD
     ASCII_FIELD    EQU 020h
     ATTR_FIELD     EQU 070h
+	ATTR_TOP	   EQU 071h	; Blue on White.
+	ATTR_BOTTOM	   EQU 072h	; Green on White.
+	ATTR_LEFT	   EQU 072h	; Cyan on White.
+	ATTR_RIGHT	   EQU 072h	; Red on White.
 
     ASCII_NUMBER_ZERO EQU 030h
 
@@ -106,32 +115,39 @@ MAIN 	PROC 	NEAR
 
       JMP MAIN_LOOP
 
-MAIN_LOOP_BUT_READCHAR:
+  MAIN_LOOP_BUT_READCHAR:
       CALL READ_CHAR
       JMP MAIN_LOOP
 
 
   UP1:
-      MOV [PAD1_ROW], 0
-      MOV [PAD1_COL], 1
+      ;MOV [PAD1_ROW], 0
+      DEC [PAD1_COL]
       JMP END_KEY
 
   DOWN1:
-      MOV [PAD1_ROW], 0
-      MOV [PAD1_COL], -1
+      ;MOV [PAD1_ROW], 0
+      INC [PAD1_COL]
       JMP END_KEY
 
   UP2:
-      MOV [PAD2_ROW], 0
-      MOV [PAD2_COL], 1
+      ;MOV [PAD2_ROW], 0
+      DEC [PAD2_COL]
       JMP END_KEY
 
   DOWN2:
-      MOV [PAD2_ROW], 0
-      MOV [PAD2_COL], -1
+      ;MOV [PAD2_ROW], 0
+      INC [PAD2_COL]
       JMP END_KEY
       
   END_KEY:
+	  ; Pintar Pala1:
+	  MOV DH, PAD1_ROW
+	  MOV DL, PAD1_COL
+	  CALL MOVE_CURSOR
+	  MOV AL, ASCII_PALAS
+	  MOV BL, ATTR_PALA1
+	  CALL PRINT_CHAR_ATTR
       JMP MAIN_LOOP
 
   END_PROG:
@@ -148,6 +164,9 @@ MAIN_LOOP_BUT_READCHAR:
       CMP AL, ASCII_YES_LOWERCASE
       JZ MAIN_GO
 
+	  ; Print Missatge d'autors:
+	  CALL PRINT_AUTHORS_STRING
+	  
 	INT 20h		
 
 MAIN	ENDP	
@@ -242,7 +261,7 @@ READ_SCREEN_CHAR PROC NEAR
 READ_SCREEN_CHAR  ENDP
 
 ; ****************************************
-; Draws the rectangular field of the game
+; Draws the rectangular field of the game. Also draws with different colors for interactivity.
 ; Entry: 
 ; 
 ; Returns:
@@ -254,7 +273,7 @@ READ_SCREEN_CHAR  ENDP
 ;    left - top: (FIELD_R1, FIELD_C1) 
 ;    right - bottom: (FIELD_R2, FIELD_C2)
 ;   Character: ASCII_FIELD
-;   Attribute: ATTR_FIELD
+;   Attribute: ATTR_FIELD, ATTR_TOP, ATTR_BOTTOM, ATTR_LEFT, ATTR_RIGHT
 ; Calls:
 ;   PRINT_CHAR_ATTR
 ; ****************************************
@@ -268,32 +287,36 @@ DRAW_FIELD PROC NEAR
     MOV AL, ASCII_FIELD
     MOV BL, ATTR_FIELD
 
-    MOV DL, FIELD_C2
+    MOV DL, FIELD_C2	 	; Right Column.
   UP_DOWN_SCREEN_LIMIT:
-    MOV DH, FIELD_R1
+    MOV DH, FIELD_R1		; Top Row.
     CALL MOVE_CURSOR
+	MOV BL, ATTR_TOP
     CALL PRINT_CHAR_ATTR
 
-    MOV DH, FIELD_R2
+    MOV DH, FIELD_R2		; Bottom Row
     CALL MOVE_CURSOR
+	MOV BL, ATTR_BOTTOM
     CALL PRINT_CHAR_ATTR
 
     DEC DL
-    CMP DL, FIELD_C1
+    CMP DL, FIELD_C1		; Left Column
     JNS UP_DOWN_SCREEN_LIMIT
 
-    MOV DH, FIELD_R2
+    MOV DH, FIELD_R2		; Bottom Row
   LEFT_RIGHT_SCREEN_LIMIT:
-    MOV DL, FIELD_C1
+    MOV DL, FIELD_C1		; Left Column
     CALL MOVE_CURSOR
+	MOV BL, ATTR_LEFT
     CALL PRINT_CHAR_ATTR
 
-    MOV DL, FIELD_C2
+    MOV DL, FIELD_C2		; Right Column
     CALL MOVE_CURSOR
+	MOV BL, ATTR_RIGHT
     CALL PRINT_CHAR_ATTR
 
     DEC DH
-    CMP DH, FIELD_R1
+    CMP DH, FIELD_R1		; Top Row
     JNS LEFT_RIGHT_SCREEN_LIMIT
                  
     POP DX
@@ -691,6 +714,44 @@ PRINT_SCORE_STRING PROC NEAR
 PRINT_SCORE_STRING       ENDP
 
 ; ****************************************
+; Print the authors string, starting in the cursor
+; (FIELD_C1, FIELD_R2) coordinate
+; Entry: 
+;   DX: pointer to string
+; Returns:
+;   -
+; Modifies:
+;   -
+; Uses: 
+;   AUTHORS_STR
+;   FIELD_C1
+;   FIELD_R2
+; Calls:
+;   GET_CURSOR_PROP
+;   SET_CURSOR_PROP
+;   PRINT_STRING
+; ****************************************
+PUBLIC PRINT_AUTHORS_STRING
+PRINT_AUTHORS_STRING PROC NEAR
+
+    PUSH CX
+    PUSH DX
+
+    CALL GET_CURSOR_PROP  ; Get cursor size
+    MOV DH, FIELD_R2+1
+    MOV DL, FIELD_C1
+    CALL SET_CURSOR_PROP
+
+    LEA DX, AUTHORS_STR
+    CALL PRINT_STRING
+
+    POP CX
+    POP DX
+    RET
+
+PRINT_AUTHORS_STRING       ENDP
+
+; ****************************************
 ; Print the score string, starting in the
 ; current cursor coordinate
 ; Entry: 
@@ -979,6 +1040,7 @@ DATA_SEG	SEGMENT	PUBLIC
 
     SCORE_STR           DB "Your score is $"
     PLAY_AGAIN_STR      DB ". Do you want to play again? (Y/N)$"
+	AUTHORS_STR			DB "David Recuenco, Alex Weiland, Fonaments de Computadors, ENTI, 2018$"
     
 DATA_SEG	ENDS
 
