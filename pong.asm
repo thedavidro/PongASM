@@ -282,7 +282,15 @@ MAIN 	PROC 	NEAR
   END_PROG:
       CALL RESTORE_TIMER_INTERRUPT
       CALL SHOW_CURSOR
+			LEA AX, SCORE1_STR
+			MOV BL, 1
       CALL PRINT_SCORE_STRING
+			MOV AX, [SCORE1]
+      CALL PRINT_SCORE
+			LEA AX, SCORE2_STR
+			MOV BL, 2
+			CALL PRINT_SCORE_STRING
+			MOV AX, [SCORE2]
       CALL PRINT_SCORE
       CALL PRINT_PLAY_AGAIN_STRING
 
@@ -837,7 +845,8 @@ PRINT_STRING       ENDP
 ; Print the score string, starting in the cursor
 ; (FIELD_C1, FIELD_R2) coordinate
 ; Entry:
-;   DX: pointer to string
+;   AX: pointer to string
+;		BL: vertical offset.
 ; Returns:
 ;   -
 ; Modifies:
@@ -854,19 +863,24 @@ PRINT_STRING       ENDP
 PUBLIC PRINT_SCORE_STRING
 PRINT_SCORE_STRING PROC NEAR
 
+		PUSH AX
+		PUSH BX
     PUSH CX
     PUSH DX
 
     CALL GET_CURSOR_PROP  ; Get cursor size
-    MOV DH, FIELD_R2+1
+    MOV DH, FIELD_R2
+		ADD DH, BL
     MOV DL, FIELD_C1
     CALL SET_CURSOR_PROP
 
-    LEA DX, SCORE_STR
+    MOV DX, AX
     CALL PRINT_STRING
 
     POP CX
     POP DX
+		POP BX
+		POP AX
     RET
 
 PRINT_SCORE_STRING       ENDP
@@ -943,7 +957,7 @@ PRINT_PLAY_AGAIN_STRING       ENDP
 ; starting in the cursor position
 ; NUM_TILES range: [0, 9999]
 ; Entry:
-;   -
+;   - AX: Score
 ; Returns:
 ;   -
 ; Modifies:
@@ -962,7 +976,7 @@ PRINT_SCORE PROC NEAR
     PUSH DX
 
     ; 1000'
-    MOV AX, 1h 	;	THIS NEEDS TO BE CHANGED !!!
+    ;MOV AX, [SCORE1] 	;	THIS NEEDS TO BE CHANGED !!!
     XOR DX, DX
     MOV BX, 1000
     DIV BX            ; DS:AX / BX -> AX: quotient, DX: remainder
@@ -1048,6 +1062,19 @@ NEW_TIMER_INTERRUPT PROC NEAR
     CMP [DIV_SPEED], AL
     JNZ END_ISR
     MOV [INT_COUNT], 0
+		INC [NUM_TILES]
+		MOV AH, 0
+		MOV AL, [NUM_TILES_INC_SPEED]
+		DIV [DIV_SPEED]
+		CMP AL, [NUM_TILES]
+		JNZ COLLISIONS
+		MOV [NUM_TILES], 0
+		DEC [DIV_SPEED]
+		CMP [DIV_SPEED], 2
+		JNL COLLISIONS
+		MOV [DIV_SPEED], 2
+
+COLLISIONS:
 
 		; Check Collisions:
 		MOV DH, [BALL_ROW]
@@ -1237,18 +1264,20 @@ DATA_SEG	SEGMENT	PUBLIC
 	BALL_ROW DB SCREEN_MAX_ROWS/2
 	BALL_COL DB SCREEN_MAX_COLS/2
 
-	SCORE1 DB 0
-	SCORE2 DB 0
+	SCORE1 DW 0
+	SCORE2 DW 0
 
-    ;NUM_TILES_INC_SPEED DB 20   ; THE SPEED IS INCREASED EVERY 'NUM_TILES_INC_SPEED'
+    NUM_TILES_INC_SPEED DB 60   ; THE SPEED IS INCREASED EVERY 'NUM_TILES_INC_SPEED'
+		NUM_TILES DB 0
 
-    DIV_SPEED DB 5             ; THE SNAKE SPEED IS THE (INTERRUPT FREQUENCY) / DIV_SPEED
+    DIV_SPEED DB 6             ; THE SNAKE SPEED IS THE (INTERRUPT FREQUENCY) / DIV_SPEED
     INT_COUNT DB 0              ; 'INT_COUNT' IS INCREASED EVERY INTERRUPT CALL, AND RESET WHEN IT ACHIEVES 'DIV_SPEED'
 
     START_GAME DB 0             ; 'MAIN' sets START_GAME to '1' when a key is pressed
     END_GAME DB 0               ; 'NEW_TIMER_INTERRUPT' sets END_GAME to '1' when a condition to end the game happens
 
-    SCORE_STR           DB "Your score is $"
+    SCORE1_STR           DB "Player 1 score is $"
+		SCORE2_STR           DB " Player 2 score is $"
     PLAY_AGAIN_STR      DB ". Do you want to play again? (Y/N)$"
 	AUTHORS_STR			DB "David Recuenco, Alex Weiland, Fonaments de Computadors, ENTI, 2018$"
 
