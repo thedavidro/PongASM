@@ -76,6 +76,9 @@ MAIN 	PROC 	NEAR
       CALL HIDE_CURSOR
       CALL DRAW_FIELD
 
+			;CALL INIT_BALL
+			CALL INIT_PADDLES
+
       MOV DH, SCREEN_MAX_ROWS/2
       MOV DL, SCREEN_MAX_COLS/2
 
@@ -633,6 +636,47 @@ INIT_SCREEN	PROC NEAR
 	RET
 
 INIT_SCREEN		ENDP
+
+; ****************************************
+; Initializes Paddles' Position.
+; Entry:
+;   -
+; Returns:
+;   -
+; Modifies:
+;   -
+; Uses:
+;   Screen size: SCREEN_MAX_ROWS, SCREEN_MAX_COLS
+; Calls:
+;		-
+; ****************************************
+PUBLIC INIT_PADDLES
+INIT_PADDLES	PROC NEAR
+
+      PUSH AX
+      PUSH BX
+      PUSH CX
+      PUSH DX
+
+			MOV [PAD1_COL], 3
+
+			MOV [PAD2_COL], SCREEN_MAX_COLS
+			SUB [PAD2_COL], 4
+
+			MOV AH, 0
+			MOV AL, SCREEN_MAX_ROWS
+			MOV BL, 2h
+			DIV BL
+			MOV [PAD1_ROW], AL
+			MOV [PAD2_ROW], AL
+
+      POP DX
+      POP CX
+      POP BX
+      POP AX
+	RET
+
+INIT_PADDLES		ENDP
 
 ; ****************************************
 ; Hides the cursor
