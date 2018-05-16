@@ -15,29 +15,29 @@ SGROUP 		GROUP 	CODE_SEG, DATA_SEG
 
     ASCII_UP          EQU 077h ; 'w'
     ASCII_DOWN        EQU 073h ; 's'
-    
+
     ASCII_UP2         EQU 06Fh ; 'o'
     ASCII_DOWN2       EQU 06Ch ; 'l'
 
     ASCII_QUIT        EQU 071h ; 'q'
 
-; ASCII / ATTR CODES TO DRAW THE SNAKE
-    ASCII_SNAKE     EQU 02Ah
-    ATTR_SNAKE      EQU 070h
-	
+; ASCII / ATTR CODES TO DRAW THE BALL
+    ASCII_BALL     EQU 02Ah
+    ATTR_BALL      EQU 070h
+
 ; ASCII / ATTR PALAS
 	ASCII_PALAS		EQU 020h
 	ATTR_PALA1		EQU 017h
 	ATTR_PALA2		EQU 027h
 
 ; ASCII / ATTR CODES TO DRAW THE FIELD
-    ASCII_FIELD    EQU 020h
-	ATTR_EMPTY	   EQU 000h
-    ATTR_FIELD     EQU 070h
-	ATTR_TOP	   EQU 071h	; Blue on White.
-	ATTR_BOTTOM	   EQU 072h	; Green on White.
-	ATTR_LEFT	   EQU 072h	; Cyan on White.
-	ATTR_RIGHT	   EQU 072h	; Red on White.
+    ASCII_FIELD    	EQU 020h
+		ATTR_EMPTY   		EQU 000h
+    ATTR_FIELD     	EQU 070h
+		ATTR_TOP	   		EQU 071h	; Blue on White.
+		ATTR_BOTTOM	   	EQU 072h	; Green on White.
+		ATTR_LEFT	   		EQU 073h	; Cyan on White.
+		ATTR_RIGHT	   	EQU 074h	; Red on White.
 
     ASCII_NUMBER_ZERO EQU 030h
 
@@ -48,7 +48,7 @@ SGROUP 		GROUP 	CODE_SEG, DATA_SEG
 ; ASCII
     ASCII_YES_UPPERCASE      EQU 059h
     ASCII_YES_LOWERCASE      EQU 079h
-    
+
 ; COLOR SCREEN DIMENSIONS IN NUMBER OF CHARACTERS
     SCREEN_MAX_ROWS EQU 25
     SCREEN_MAX_COLS EQU 80
@@ -78,9 +78,9 @@ MAIN 	PROC 	NEAR
 
       MOV DH, SCREEN_MAX_ROWS/2
       MOV DL, SCREEN_MAX_COLS/2
-      
+
       CALL MOVE_CURSOR
-      
+
   MAIN_LOOP:
       CMP [END_GAME], TRUE
       JZ END_PROG
@@ -92,16 +92,16 @@ MAIN 	PROC 	NEAR
       JZ MAIN_LOOP
 
       ; A key is available -> read
-      CALL READ_CHAR      
+      CALL READ_CHAR
 
       ; End game?
       CMP AL, ASCII_QUIT
       JZ END_PROG
-      
+
       ; Is it an special key?
       CMP AL, ASCII_SPECIAL_KEY
       JZ MAIN_LOOP_BUT_READCHAR
-      
+
       ; The game is on!
       MOV [START_GAME], TRUE
 
@@ -130,7 +130,7 @@ MAIN 	PROC 	NEAR
 	  CALL READ_SCREEN_CHAR
       CMP AH, ATTR_TOP
       JZ END_KEY
-	  
+
       ; Borrar parte de abajo (+)
       MOV DH, [PAD1_ROW]
 	  MOV DL, [PAD1_COL]
@@ -143,7 +143,7 @@ MAIN 	PROC 	NEAR
 	  MOV AL, ASCII_FIELD
 	  MOV BL, ATTR_EMPTY
 	  CALL PRINT_CHAR_ATTR
-	  
+
 	  ; Modificar valor
 	  DEC [PAD1_ROW]
       JMP END_KEY
@@ -162,7 +162,7 @@ MAIN 	PROC 	NEAR
 	  CALL READ_SCREEN_CHAR
       CMP AH, ATTR_BOTTOM
       JZ END_KEY
-  
+
       ; Borrar parte de arriba (-)
 	  MOV DH, [PAD1_ROW]
 	  MOV DL, [PAD1_COL]
@@ -170,7 +170,7 @@ MAIN 	PROC 	NEAR
 	  MOV AL, ASCII_FIELD
 	  MOV BL, ATTR_EMPTY
 	  CALL PRINT_CHAR_ATTR
-	  
+
 	  ; Modificar valores
       INC [PAD1_ROW]
       JMP END_KEY
@@ -184,7 +184,7 @@ MAIN 	PROC 	NEAR
 	  CALL READ_SCREEN_CHAR
       CMP AH, ATTR_TOP
       JZ END_KEY
-  
+
       ; Borrar parte de abajo (+)
       MOV DH, [PAD2_ROW]
 	  MOV DL, [PAD2_COL]
@@ -197,7 +197,7 @@ MAIN 	PROC 	NEAR
 	  MOV AL, ASCII_FIELD
 	  MOV BL, ATTR_EMPTY
 	  CALL PRINT_CHAR_ATTR
-	  
+
 	  ; Modificar valor
       DEC [PAD2_ROW]
       JMP END_KEY
@@ -216,7 +216,7 @@ MAIN 	PROC 	NEAR
 	  CALL READ_SCREEN_CHAR
       CMP AH, ATTR_BOTTOM
       JZ END_KEY
-  
+
       ; Borrar parte de arriba (-)
 	  MOV DH, [PAD2_ROW]
 	  MOV DL, [PAD2_COL]
@@ -224,11 +224,11 @@ MAIN 	PROC 	NEAR
 	  MOV AL, ASCII_FIELD
 	  MOV BL, ATTR_EMPTY
 	  CALL PRINT_CHAR_ATTR
-	  
+
 	  ; Modificar valores
       INC [PAD2_ROW]
       JMP END_KEY
-      
+
   END_KEY:
 	  ; Pintar Pala1
 	  MOV DH, [PAD1_ROW]
@@ -275,8 +275,8 @@ MAIN 	PROC 	NEAR
 	  INC DH
 	  CALL MOVE_CURSOR
 	  CALL PRINT_CHAR_ATTR
-	  
-	  
+
+
       JMP MAIN_LOOP
 
   END_PROG:
@@ -285,7 +285,7 @@ MAIN 	PROC 	NEAR
       CALL PRINT_SCORE_STRING
       CALL PRINT_SCORE
       CALL PRINT_PLAY_AGAIN_STRING
-      
+
       CALL READ_CHAR
 
       CMP AL, ASCII_YES_UPPERCASE
@@ -295,20 +295,20 @@ MAIN 	PROC 	NEAR
 
 	  ; Print Missatge d'autors:
 	  CALL PRINT_AUTHORS_STRING
-	  
-	INT 20h		
 
-MAIN	ENDP	
+	INT 20h
+
+MAIN	ENDP
 
 ; ****************************************
 ; Reset internal variables
-; Entry: 
-;   
+; Entry:
+;
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   INC_ROW memory variable
 ;   INC_COL memory variable
 ;   DIV_SPEED memory variable
@@ -327,28 +327,28 @@ INIT_GAME         PROC    NEAR
     ;MOV [DIV_SPEED], 10
 
     ;MOV [NUM_TILES], 0
-    
+
     MOV [START_GAME], FALSE
     MOV [END_GAME], FALSE
 
     RET
-INIT_GAME	ENDP	
+INIT_GAME	ENDP
 
 ; ****************************************
 ; Reads char from keyboard
 ; If char is not available, blocks until a key is pressed
 ; The char is not output to screen
-; Entry: 
+; Entry:
 ;
 ; Returns:
 ;   AL: ASCII CODE
 ;   AH: ATTRIBUTE
 ; Modifies:
-;   
-; Uses: 
-;   
+;
+; Uses:
+;
 ; Calls:
-;   
+;
 ; ****************************************
 PUBLIC  READ_CHAR
 READ_CHAR PROC NEAR
@@ -357,25 +357,25 @@ READ_CHAR PROC NEAR
     INT 21h
 
     RET
-      
+
 READ_CHAR ENDP
 
 
 ; ****************************************
 ; Read character and attribute at cursor position, page 0
-; Entry: 
+; Entry:
 ;
 ; Returns:
 ;   AL: ASCII CODE
 ;   AH: ATTRIBUTE
 ; Modifies:
-;   
-; Uses: 
-;   
+;
+; Uses:
+;
 ; Calls:
 ;   int 10h, service AH=8
 ; ****************************************
-PUBLIC READ_SCREEN_CHAR                 
+PUBLIC READ_SCREEN_CHAR
 READ_SCREEN_CHAR PROC NEAR
 
     PUSH BX
@@ -386,20 +386,20 @@ READ_SCREEN_CHAR PROC NEAR
 
     POP BX
     RET
-      
+
 READ_SCREEN_CHAR  ENDP
 
 ; ****************************************
 ; Draws the rectangular field of the game. Also draws with different colors for interactivity.
-; Entry: 
-; 
+; Entry:
+;
 ; Returns:
-;   
+;
 ; Modifies:
-;   
-; Uses: 
-;   Coordinates of the rectangle: 
-;    left - top: (FIELD_R1, FIELD_C1) 
+;
+; Uses:
+;   Coordinates of the rectangle:
+;    left - top: (FIELD_R1, FIELD_C1)
 ;    right - bottom: (FIELD_R2, FIELD_C2)
 ;   Character: ASCII_FIELD
 ;   Attribute: ATTR_FIELD, ATTR_TOP, ATTR_BOTTOM, ATTR_LEFT, ATTR_RIGHT
@@ -447,7 +447,7 @@ DRAW_FIELD PROC NEAR
     DEC DH
     CMP DH, FIELD_R1		; Top Row
     JNS LEFT_RIGHT_SCREEN_LIMIT
-                 
+
     POP DX
     POP BX
     POP AX
@@ -456,46 +456,75 @@ DRAW_FIELD PROC NEAR
 DRAW_FIELD       ENDP
 
 ; ****************************************
-; Prints a new tile of the snake, at the current cursos position
-; Entry: 
-; 
+; Prints the ball, at the current cursor position
+; Entry:
+;
 ; Returns:
-;   
+;
 ; Modifies:
-;   
-; Uses: 
-;   character: ASCII_SNAKE
-;   attribute: ATTR_SNAKE
+;
+; Uses:
+;   character: ASCII_BALL
+;   attribute: ATTR_BALL
 ; Calls:
 ;   PRINT_CHAR_ATTR
 ; ****************************************
-PUBLIC PRINT_SNAKE
-PRINT_SNAKE PROC NEAR
+PUBLIC PRINT_BALL
+PRINT_BALL PROC NEAR
 
     PUSH AX
     PUSH BX
-    MOV AL, ASCII_SNAKE
-    MOV BL, ATTR_SNAKE
+    MOV AL, ASCII_BALL
+    MOV BL, ATTR_BALL
     CALL PRINT_CHAR_ATTR
-      
+
     POP BX
     POP AX
     RET
 
-PRINT_SNAKE        ENDP     
+PRINT_BALL        ENDP
 
 ; ****************************************
-; Prints character and attribute in the 
-; current cursor position, page 0 
+; Prints the ball, at the current cursor position
+; Entry:
+;
+; Returns:
+;
+; Modifies:
+;
+; Uses:
+;   character: ASCII_BALL
+;   attribute: ATTR_BALL
+; Calls:
+;   PRINT_CHAR_ATTR
+; ****************************************
+PUBLIC PRINT_EMPTY
+PRINT_EMPTY PROC NEAR
+
+    PUSH AX
+    PUSH BX
+    MOV AL, ASCII_FIELD
+    MOV BL, ATTR_EMPTY
+    CALL PRINT_CHAR_ATTR
+
+    POP BX
+    POP AX
+    RET
+
+PRINT_EMPTY        ENDP
+
+; ****************************************
+; Prints character and attribute in the
+; current cursor position, page 0
 ; Keeps the cursor position
-; Entry: 
+; Entry:
 ;   AL: ASCII to print
 ;   BL: ATTRIBUTE to print
 ; Returns:
-;   
+;
 ; Modifies:
-;   
-; Uses: 
+;
+; Uses:
 ;
 ; Calls:
 ;   int 10h, service AH=9
@@ -519,19 +548,19 @@ PRINT_CHAR_ATTR PROC NEAR
     POP AX
     RET
 
-PRINT_CHAR_ATTR        ENDP     
+PRINT_CHAR_ATTR        ENDP
 
 ; ****************************************
-; Prints character and attribute in the 
-; current cursor position, page 0 
+; Prints character and attribute in the
+; current cursor position, page 0
 ; Cursor moves one position right
-; Entry: 
+; Entry:
 ;    AL: ASCII code to print
 ; Returns:
-;   
+;
 ; Modifies:
-;   
-; Uses: 
+;
+; Uses:
 ;
 ; Calls:
 ;   int 21h, service AH=2
@@ -550,18 +579,18 @@ PRINT_CHAR PROC NEAR
     POP AX
     RET
 
-PRINT_CHAR        ENDP     
+PRINT_CHAR        ENDP
 
 ; ****************************************
-; Set screen to mode 3 (80x25, color) and 
+; Set screen to mode 3 (80x25, color) and
 ; clears the screen
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   Screen size: SCREEN_MAX_ROWS, SCREEN_MAX_COLS
 ; Calls:
 ;   int 10h, service AH=0
@@ -588,24 +617,24 @@ INIT_SCREEN	PROC NEAR
       MOV BH, 7
       MOV AH, 6
       INT 10h
-      
-      POP DX      
-      POP CX      
-      POP BX      
-      POP AX      
+
+      POP DX
+      POP CX
+      POP BX
+      POP AX
 	RET
 
 INIT_SCREEN		ENDP
 
 ; ****************************************
-; Hides the cursor 
-; Entry: 
+; Hides the cursor
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   -
 ; Calls:
 ;   int 10h, service AH=1
@@ -615,7 +644,7 @@ HIDE_CURSOR PROC NEAR
 
       PUSH AX
       PUSH CX
-      
+
       MOV AH, 1
       MOV CX, CURSOR_SIZE_HIDE
       INT 10h
@@ -628,13 +657,13 @@ HIDE_CURSOR       ENDP
 
 ; ****************************************
 ; Shows the cursor (standard size)
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   -
 ; Calls:
 ;   int 10h, service AH=1
@@ -644,7 +673,7 @@ SHOW_CURSOR PROC NEAR
 
     PUSH AX
     PUSH CX
-      
+
     MOV AH, 1
     MOV CX, CURSOR_SIZE_SHOW
     INT 10h
@@ -657,14 +686,14 @@ SHOW_CURSOR       ENDP
 
 ; ****************************************
 ; Get cursor properties: coordinates and size (page 0)
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   (DH, DL): coordinates -> (row, col)
 ;   (CH, CL): cursor size
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   -
 ; Calls:
 ;   int 10h, service AH=3
@@ -682,19 +711,19 @@ GET_CURSOR_PROP PROC NEAR
       POP BX
       POP AX
       RET
-      
+
 GET_CURSOR_PROP       ENDP
 
 ; ****************************************
 ; Set cursor properties: coordinates and size (page 0)
-; Entry: 
+; Entry:
 ;   (DH, DL): coordinates -> (row, col)
 ;   (CH, CL): cursor size
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   -
 ; Calls:
 ;   int 10h, service AH=2
@@ -712,19 +741,19 @@ SET_CURSOR_PROP PROC NEAR
       POP BX
       POP AX
       RET
-      
+
 SET_CURSOR_PROP       ENDP
 
 ; ****************************************
 ; Move cursor to coordinate
 ; Cursor size if kept
-; Entry: 
+; Entry:
 ;   (DH, DL): coordinates -> (row, col)
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   -
 ; Calls:
 ;   GET_CURSOR_PROP
@@ -745,13 +774,13 @@ MOVE_CURSOR       ENDP
 ; Moves cursor one position to the right
 ; If the column limit is reached, the cursor does not move
 ; Cursor size if kept
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   SCREEN_MAX_COLS
 ; Calls:
 ;   GET_CURSOR_PROP
@@ -767,7 +796,7 @@ MOVE_CURSOR_RIGHT PROC NEAR
     ADD DL, 1
     CMP DL, SCREEN_MAX_COLS
     JZ MOVE_CURSOR_RIGHT_END
-    
+
     CALL SET_CURSOR_PROP
 
   MOVE_CURSOR_RIGHT_END:
@@ -780,13 +809,13 @@ MOVE_CURSOR_RIGHT       ENDP
 ; ****************************************
 ; Print string to screen
 ; The string end character is '$'
-; Entry: 
+; Entry:
 ;   DX: pointer to string
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   SCREEN_MAX_COLS
 ; Calls:
 ;   INT 21h, service AH=9
@@ -795,7 +824,7 @@ PUBLIC PRINT_STRING
 PRINT_STRING PROC NEAR
 
     PUSH DX
-      
+
     MOV AH,9
     INT 21h
 
@@ -807,13 +836,13 @@ PRINT_STRING       ENDP
 ; ****************************************
 ; Print the score string, starting in the cursor
 ; (FIELD_C1, FIELD_R2) coordinate
-; Entry: 
+; Entry:
 ;   DX: pointer to string
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   SCORE_STR
 ;   FIELD_C1
 ;   FIELD_R2
@@ -845,13 +874,13 @@ PRINT_SCORE_STRING       ENDP
 ; ****************************************
 ; Print the authors string, starting in the cursor
 ; (FIELD_C1, FIELD_R2) coordinate
-; Entry: 
+; Entry:
 ;   DX: pointer to string
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   AUTHORS_STR
 ;   FIELD_C1
 ;   FIELD_R2
@@ -883,13 +912,13 @@ PRINT_AUTHORS_STRING       ENDP
 ; ****************************************
 ; Print the score string, starting in the
 ; current cursor coordinate
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   PLAY_AGAIN_STR
 ;   FIELD_C1
 ;   FIELD_R2
@@ -910,16 +939,16 @@ PRINT_PLAY_AGAIN_STRING PROC NEAR
 PRINT_PLAY_AGAIN_STRING       ENDP
 
 ; ****************************************
-; Prints the score of the player in decimal, on the screen, 
+; Prints the score of the player in decimal, on the screen,
 ; starting in the cursor position
 ; NUM_TILES range: [0, 9999]
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   NUM_TILES memory variable
 ; Calls:
 ;   PRINT_CHAR
@@ -933,7 +962,7 @@ PRINT_SCORE PROC NEAR
     PUSH DX
 
     ; 1000'
-    MOV AX, [NUM_TILES]
+    MOV AX, 1h 	;	THIS NEEDS TO BE CHANGED !!!
     XOR DX, DX
     MOV BX, 1000
     DIV BX            ; DS:AX / BX -> AX: quotient, DX: remainder
@@ -965,23 +994,23 @@ PRINT_SCORE PROC NEAR
     POP CX
     POP BX
     POP AX
-    RET   
-         
+    RET
+
 PRINT_SCORE        ENDP
 
 ; ****************************************
 ; Game timer interrupt service routine
 ; Called 18.2 times per second by the operating system
 ; Calls previous ISR
-; Manages the movement of the snake: 
+; Manages the movement of the snake:
 ;   position, direction, speed, length, display, collisions
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   OLD_INTERRUPT_BASE memory variable
 ;   START_GAME memory variable
 ;   END_GAME memory variable
@@ -1005,34 +1034,110 @@ NEW_TIMER_INTERRUPT PROC NEAR
     CALL DWORD PTR [OLD_INTERRUPT_BASE]
 
     PUSH AX
+		PUSH BX
+		PUSH CX
+		PUSH DX
 
     ; Do nothing if game is stopped
     CMP [START_GAME], TRUE
     JNZ END_ISR
 
+		; Increment INC_COUNT and check if ball position must be updated (INT_COUNT == DIV_COUNT)
+    INC [INT_COUNT]
+    MOV AL, [INT_COUNT]
+    CMP [DIV_SPEED], AL
+    JNZ END_ISR
+    MOV [INT_COUNT], 0
+
+		; Check Collisions:
+		MOV DH, [BALL_ROW]
+		MOV DL, [BALL_COL]
+		ADD DH, [INC_ROW]
+		ADD DL, [INC_COL]
+		CALL MOVE_CURSOR
+		CALL READ_SCREEN_CHAR
+			; AH now stores the read attribute.
+
+		CMP AH, ATTR_TOP
+		JZ COLLIDE_TOP
+
+		CMP AH, ATTR_BOTTOM
+		JZ COLLIDE_BOTTOM
+
+		CMP AH, ATTR_LEFT
+		JZ END_PONG
+
+		CMP AH, ATTR_RIGHT
+		JZ END_PONG
+
+		CMP AH, ATTR_PALA1
+		JZ PALA1
+
+		CMP AH, ATTR_PALA2
+		JZ PALA2
+
+		JMP CONTINUE
+
+COLLIDE_TOP:
+		INC [INC_ROW]
+		INC [INC_ROW]
+		JMP CONTINUE
+
+COLLIDE_BOTTOM:
+		DEC [INC_ROW]
+		DEC [INC_ROW]
+		JMP CONTINUE
+
+PALA1:
+		INC [SCORE1]
+		INC [INC_COL]
+		INC [INC_COL]
+		JMP CONTINUE
+
+PALA2:
+		INC [SCORE2]
+		DEC [INC_COL]
+		DEC [INC_COL]
+		JMP CONTINUE
+
+CONTINUE:
 	; Ball Movement
+		MOV DH, [BALL_ROW]
+		MOV DL, [BALL_COL]
+		CALL MOVE_CURSOR
+		CALL PRINT_EMPTY
+
+		ADD DH, [INC_ROW]
+		ADD DL, [INC_COL]
+		CALL MOVE_CURSOR
+		CALL PRINT_BALL
+		MOV [BALL_ROW], DH
+		MOV [BALL_COL], DL
 
     JMP END_ISR
-      
-END_SNAKES:
+
+END_PONG:
       MOV [END_GAME], TRUE
-      
+
 END_ISR:
 
+			POP DX
+			POP CX
+			POP BX
       POP AX
       IRET
 
 NEW_TIMER_INTERRUPT ENDP
-                 
+
 ; ****************************************
 ; Replaces current timer ISR with the game timer ISR
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   OLD_INTERRUPT_BASE memory variable
 ;   NEW_TIMER_INTERRUPT memory variable
 ; Calls:
@@ -1044,14 +1149,14 @@ REGISTER_TIMER_INTERRUPT PROC NEAR
         PUSH AX
         PUSH BX
         PUSH DS
-        PUSH ES 
+        PUSH ES
 
         CLI                                 ;Disable Ints
-        
+
         ;Get current 01CH ISR segment:offset
         MOV  AX, 3508h                      ;Select MS-DOS service 35h, interrupt 08h
         INT  21h                            ;Get the existing ISR entry for 08h
-        MOV  WORD PTR OLD_INTERRUPT_BASE+02h, ES  ;Store Segment 
+        MOV  WORD PTR OLD_INTERRUPT_BASE+02h, ES  ;Store Segment
         MOV  WORD PTR OLD_INTERRUPT_BASE, BX  ;Store Offset
 
         ;Set new 01Ch ISR segment:offset
@@ -1065,19 +1170,19 @@ REGISTER_TIMER_INTERRUPT PROC NEAR
         POP  DS
         POP  BX
         POP  AX
-        RET      
+        RET
 
 REGISTER_TIMER_INTERRUPT ENDP
 
 ; ****************************************
 ; Restore timer ISR
-; Entry: 
+; Entry:
 ;   -
 ; Returns:
 ;   -
 ; Modifies:
 ;   -
-; Uses: 
+; Uses:
 ;   OLD_INTERRUPT_BASE memory variable
 ; Calls:
 ;   int 21h, service AH=25 (system interrupt 08)
@@ -1085,12 +1190,12 @@ REGISTER_TIMER_INTERRUPT ENDP
 PUBLIC RESTORE_TIMER_INTERRUPT
 RESTORE_TIMER_INTERRUPT PROC NEAR
 
-      PUSH AX                             
+      PUSH AX
       PUSH DS
-      PUSH DX 
+      PUSH DX
 
       CLI                                 ;Disable Ints
-        
+
       ;Restore 08h ISR
       MOV  AX, 2508h                      ;MS-DOS service 25h, ISR 08h
       MOV  DX, WORD PTR OLD_INTERRUPT_BASE
@@ -1099,43 +1204,45 @@ RESTORE_TIMER_INTERRUPT PROC NEAR
 
       STI                                 ;Re-enable interrupts
 
-      POP  DX                             
+      POP  DX
       POP  DS
       POP  AX
-      RET    
-      
+      RET
+
 RESTORE_TIMER_INTERRUPT ENDP
 
 CODE_SEG 	ENDS
 
 DATA_SEG	SEGMENT	PUBLIC
-			
+
     OLD_INTERRUPT_BASE    DW  0, 0  ; Stores the current (system) timer ISR address
 
     ; (INC_ROW. INC_COL) may be (-1, 0, 1), and determine the direction of movement of the snake
-    INC_ROW DB 0    
-    INC_COL DB 0
-	
+    INC_ROW DB 1
+    INC_COL DB 1
+
 	; PADDLE #1 coordinates
 	PAD1_ROW DB SCREEN_MAX_ROWS/2
 	PAD1_COL DB 3
-	
+
 	; PADDLE #2 coordinates
 	PAD2_ROW DB SCREEN_MAX_ROWS/2
 	PAD2_COL DB SCREEN_MAX_COLS-4
-	
+
 	; PADDLE TMPS
 	PAD1_TMP DB 0
 	PAD2_TMP DB 0
-	
+
 	; BALL coordinates
 	BALL_ROW DB SCREEN_MAX_ROWS/2
 	BALL_COL DB SCREEN_MAX_COLS/2
 
-    NUM_TILES DW 0              ; SNAKE LENGTH
-    NUM_TILES_INC_SPEED DB 20   ; THE SPEED IS INCREASED EVERY 'NUM_TILES_INC_SPEED'
-    
-    DIV_SPEED DB 10             ; THE SNAKE SPEED IS THE (INTERRUPT FREQUENCY) / DIV_SPEED
+	SCORE1 DB 0
+	SCORE2 DB 0
+
+    ;NUM_TILES_INC_SPEED DB 20   ; THE SPEED IS INCREASED EVERY 'NUM_TILES_INC_SPEED'
+
+    DIV_SPEED DB 5             ; THE SNAKE SPEED IS THE (INTERRUPT FREQUENCY) / DIV_SPEED
     INT_COUNT DB 0              ; 'INT_COUNT' IS INCREASED EVERY INTERRUPT CALL, AND RESET WHEN IT ACHIEVES 'DIV_SPEED'
 
     START_GAME DB 0             ; 'MAIN' sets START_GAME to '1' when a key is pressed
@@ -1144,7 +1251,7 @@ DATA_SEG	SEGMENT	PUBLIC
     SCORE_STR           DB "Your score is $"
     PLAY_AGAIN_STR      DB ". Do you want to play again? (Y/N)$"
 	AUTHORS_STR			DB "David Recuenco, Alex Weiland, Fonaments de Computadors, ENTI, 2018$"
-    
+
 DATA_SEG	ENDS
 
 		END MAIN
