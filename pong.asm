@@ -285,16 +285,30 @@ MAIN 	PROC 	NEAR
   END_PROG:
       CALL RESTORE_TIMER_INTERRUPT
       CALL SHOW_CURSOR
+
+			MOV AX, [SCORE1]
+			MOV BX, [SCORE2]
+			CMP AX, BX
+
+			JL END_WON2
+			JZ END_NOWIN
+
+	END_WON1:
 			LEA AX, SCORE1_STR
 			MOV BL, 1
       CALL PRINT_SCORE_STRING
-			MOV AX, [SCORE1]
-      CALL PRINT_SCORE
+			JMP END_END
+	END_WON2:
 			LEA AX, SCORE2_STR
-			MOV BL, 2
+			MOV BL, 1
 			CALL PRINT_SCORE_STRING
-			MOV AX, [SCORE2]
-      CALL PRINT_SCORE
+			JMP END_END
+	END_NOWIN:
+			MOV DH, FIELD_R2
+			INC DH
+			MOV DL, FIELD_C1
+			CALL MOVE_CURSOR
+	END_END:
       CALL PRINT_PLAY_AGAIN_STRING
 
       CALL READ_CHAR
@@ -1190,45 +1204,11 @@ COLLISIONS:
 		JMP CONTINUE
 
 COLLIDE_TOP:
-		; Check for possible bugs on the corners
-		; Se predice la colision con la esquina utilizando el tipo de colision y despues la posicion previa de la pelota para saber en qué esquina estará
-		MOV DH, [BALL_ROW]
-		MOV DL, [BALL_COL]
-		DEC DL
-		CALL MOVE_CURSOR
-		CALL READ_SCREEN_CHAR
-		CMP AH, ATTR_PALA1
-		JE CORNER_TL
-		
-		MOV DL, [BALL_COL]
-		INC DL
-		CALL MOVE_CURSOR
-		CALL READ_SCREEN_CHAR
-		CMP AH, ATTR_PALA2
-		JE CORNER_TR
-		
 		INC [INC_ROW]
 		INC [INC_ROW]
 		JMP CONTINUE
 
 COLLIDE_BOTTOM:
-		; Check for possible bugs on the corners
-		; Se predice la colision con la esquina utilizando el tipo de colision y despues la posicion previa de la pelota para saber en qué esquina estará
-		MOV DH, [BALL_ROW]
-		MOV DL, [BALL_COL]
-		DEC DL
-		CALL MOVE_CURSOR
-		CALL READ_SCREEN_CHAR
-		CMP AH, ATTR_PALA1
-		JE CORNER_BL
-		
-		MOV DL, [BALL_COL]
-		INC DL
-		CALL MOVE_CURSOR
-		CALL READ_SCREEN_CHAR
-		CMP AH, ATTR_PALA2
-		JE CORNER_BR
-		
 		DEC [INC_ROW]
 		DEC [INC_ROW]
 		JMP CONTINUE
@@ -1243,35 +1223,6 @@ PALA2:
 		INC [SCORE2]
 		DEC [INC_COL]
 		DEC [INC_COL]
-		JMP CONTINUE
-		
-		
-CORNER_TL:
-		INC [INC_ROW]
-		INC [INC_ROW]
-		INC [INC_COL]
-		INC [INC_COL]
-		JMP CONTINUE
-		
-CORNER_TR:
-		INC [INC_ROW]
-		INC [INC_ROW]
-		DEC [INC_COL]
-		DEC [INC_COL]
-		JMP CONTINUE
-		
-CORNER_BR:
-		DEC [INC_ROW]
-		DEC [INC_ROW]
-		DEC [INC_COL]
-		DEC [INC_COL]
-		JMP CONTINUE
-
-CORNER_BL:
-		DEC [INC_ROW]
-		DEC [INC_ROW]
-		INC [INC_COL]
-		INC [INC_COL]
 		JMP CONTINUE
 
 CONTINUE:
@@ -1403,10 +1354,13 @@ DATA_SEG	SEGMENT	PUBLIC
 	PAD2_ROW DB SCREEN_MAX_ROWS/2
 	PAD2_COL DB SCREEN_MAX_COLS-4
 
+	; PADDLE TMPS
+	PAD1_TMP DB 0
+	PAD2_TMP DB 0
+
 	; BALL coordinates
 	BALL_ROW DB SCREEN_MAX_ROWS/2
 	BALL_COL DB SCREEN_MAX_COLS/2
-	BALL_TMP DB 0
 
 	SCORE1 DW 0
 	SCORE2 DW 0
@@ -1414,14 +1368,14 @@ DATA_SEG	SEGMENT	PUBLIC
     NUM_TILES_INC_SPEED DB 60   ; THE SPEED IS INCREASED EVERY 'NUM_TILES_INC_SPEED'
 		NUM_TILES DB 0
 
-    DIV_SPEED DB 2              ; THE SNAKE SPEED IS THE (INTERRUPT FREQUENCY) / DIV_SPEED
+    DIV_SPEED DB 6             ; THE SNAKE SPEED IS THE (INTERRUPT FREQUENCY) / DIV_SPEED
     INT_COUNT DB 0              ; 'INT_COUNT' IS INCREASED EVERY INTERRUPT CALL, AND RESET WHEN IT ACHIEVES 'DIV_SPEED'
 
     START_GAME DB 0             ; 'MAIN' sets START_GAME to '1' when a key is pressed
     END_GAME DB 0               ; 'NEW_TIMER_INTERRUPT' sets END_GAME to '1' when a condition to end the game happens
 
-    SCORE1_STR           DB "Player 1 score is $"
-		SCORE2_STR           DB " Player 2 score is $"
+    SCORE1_STR           DB "Player 1 won! $"
+		SCORE2_STR           DB " Player 2 won! $"
     PLAY_AGAIN_STR      DB ". Do you want to play again? (Y/N)$"
 	AUTHORS_STR			DB "David Recuenco, Alex Weiland, Fonaments de Computadors, ENTI, 2018$"
 
